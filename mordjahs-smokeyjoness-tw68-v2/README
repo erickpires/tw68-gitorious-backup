@@ -1,0 +1,110 @@
+The files in this subdirectory should be able to be used to compile and
+install a driver for the TW6800-series chipset.  In order to do this
+compilation, the system being used for compilation should contain the
+current kernel sources, or at least the "kernel-headers" and the
+"kernel-development" packages (different names may be used for these
+on different distrubutions).
+
+
+Current Status - 13 September 2009 10:30am HK Time
+--------------------------------------------------
+
+The basic functionality for using the TW6800 video in "grabdisplay" mode
+is reasonably stable.  The "overlay" mode and window clipping are not yet
+functional.  There is no support for eeprom, audio or transport stream at
+this time.
+
+There is a known problem if the application program tries to dynamically
+change the scaling of the captured video.  This can result in loss of
+picture, and (at least) some logged error messages.
+
+--------------------------------------------------
+    |            |
+    | Change Log |
+    |            |
+--------------------------------------------------
+16 December 2009
+Small enhancement to Makefile for "make insmod"
+ - suppressed error message if module was previously loaded
+ - added in some modprobe's to assure required helper modules are loaded
+
+26 December 2009
+Removed all code trying to implement overlay mode.  Changed capabilites
+to show V4L2_CAP_VIDEO_OVERLAY not present.
+Removed modules tw68-controls.c, tw68-fileops.c and tw68-input.c.
+
+27 December 2009
+Enhanced code to handle cropping, as well as the tw68_set_scale routine.
+Adjusted the values in tw68-video's NORM_625_50 to improve xawtv's display.
+Changed debug prints in tw68-video.c to provide better granularity
+(allow better control over which messages to print).
+
+31 December 2009
+Removed source module tw68-ioctls.c
+Cleaned up all messages from checkpatch.pl
+Adjusted debug levels to further reduce log messages for trouble-free runs
+Bumped version number to 0.0.2 :-)
+
+01 January 2010
+Re-examined all control register initialisations; took into account all of
+the comments from Cavok's previous checking, changed several accordingly, and
+removed the comments. Added some amplification to comments on settings.
+
+03 January 2010
+Adjusted the values in tw68-video's NORM_525_60 using a very cheap NTSC
+camera.
+Added code for V4L2_CID_COLOR_KILLER and V4L2_CID_CHROMA_AGC
+
+08 January 2010
+Enhanced Makefile to allow for TW68_TESTING (determine whether or not to
+include experimental code), and to add a new target "install" to put the
+module into the current module directory.
+
+08 January 2010
+Fixed warning in tw68-risc.c
+
+09 January 2010
+Initialised the GPIO register to fix ghosting on some inexpensive boards -
+special thanks to Ben at Sttech for the hardware debugging which isolated
+this problem.
+Added in a PCI ID for the TW6800 chip.  This is just to allow any users
+
+12 January 2010
+Fixed error message from 'make insmod' when module wasn't already loaded.
+Set bit DETV of VCNTL1 to fix sync problems on multi-cams/chip.
+Changed GPIO init to do 4 bits instead of 3.
+Changed set_tvnorm to only write reg if changed.
+Removed initialisation of TW68-RESERV2 register, since I didn't know what
+it is for.
+
+19 January 2010
+Changed debug logging in tw68-core.c to follow tw68-video.c flag settings.
+Changed handling of mux switching.  Structure 'dev' now has two fields,
+'input' and 'hw_input', which point to details of mux setting for card. When
+the v4l2 command to switch input is received, 'input' is changed accordingly.
+At the interrupt at the end of the current frame occurs, the hardware is
+switched and 'hw_input' is set.
+Corrected value for setting of ColorFormatGamma bit.
+Added VLOCK and HLOCK to video interrupt handling routine.
+Corrected tw_clearb macro definition.
+Bumped version number to 0.0.3
+
+22 January 2010
+Enhanced code to cater for the TW6800
+
+With great assistance from Robby Cerantola, found and fixed the major spot
+that was preventing the TW6800 from synchronizing and starting its display.
+This was the fact that the VLOCK and HLOCK bits in the interrupt register are
+handled differently in the TW6800.
+Added code to save the chip type in the device structure, and to use it for
+setting up registers differently for the different Techwell chip types.  Also
+did a little cleanup in the interrupt handling code.  Added code within the
+tw68_set_scale routine to set different register values depending upon the
+chip type (for now, the only register different is h_delay).
+Bumped version number to 0.0.4.
+
+29 June 2013
+Changed tw68.h and tw68-core.c to properly handle the absence of __devinit and
+__devexit in kernel version 3.8.0 and above.
+Changed makefile so 'make install' will create the module destination directory
+if it does not exist.
